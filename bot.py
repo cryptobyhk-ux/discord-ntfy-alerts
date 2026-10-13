@@ -13,7 +13,9 @@ Env vars:
 
 import asyncio
 import os
+import threading
 import urllib.request
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import discord
 
@@ -61,7 +63,35 @@ async def on_message(message: discord.Message) -> None:
     await asyncio.to_thread(send_ntfy, "Discord Alert", text)
 
 
+def _start_health_server() -> None:
+    """Render free web service health check ke liye chhota HTTP endpoint.
+
+    Sirf tab chalta hai jab PORT env var set ho (Render khud set karta hai).
+    Is par har 5 min me ping aata rahe to Render service ko sone nahi deta.
+    """
+
+    port = os.environ.get("PORT")
+    if not port:
+        return
+
+    class _Handler(BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"ok")
+
+        def log_message(self, *args):  # noqa: ANN202
+            pass
+
+    def _serve() -> None:
+        HTTPServer(("0.0.0.0", int(port)), _Handler).serve_forever()
+
+    threading.Thread(target=_serve, daemon=True).start()
+    print(f"health endpoint on :{port}", flush=True)
+
+
 if __name__ == "__main__":
     if not DISCORD_TOKEN:
         raise SystemExit("DISCORD_TOKEN env var missing - bot token set karo.")
+    _start_health_server()
     client.run(DISCORD_TOKEN)

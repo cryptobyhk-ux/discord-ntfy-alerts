@@ -21,13 +21,19 @@ ntfy par topic "banane" ka koi button nahi hota — bot ka pehla trigger hi
 topic bana deta hai. Members ntfy app (Play Store) me usi topic name ko
 subscribe kar lein; pehli notification aate hi sab live.
 
-## Koyeb (free) par deploy
+## Render (free) par deploy
 
-1. Koyeb me GitHub se login karo, **Create Service → GitHub** se ye repo select karo.
-2. Builder: **Buildpack**, Run command: `python bot.py` (Procfile bhi mojood hai).
-3. Instance: **Nano** (free tier), region apni marzi.
+1. Render dashboard me GitHub se login karo, **New + → Web Service** se ye repo select karo.
+   (Free tier me Worker service nahi milta, isliye Web Service + neeche wala health endpoint.)
+2. Build command: `pip install -r requirements.txt`, Start command: `python bot.py`.
+3. Instance type: **Free**. `PORT` env Render khud set karta hai.
 4. Env vars me `DISCORD_TOKEN` (bot token) aur `NTFY_TOPIC` set karo → Deploy.
 5. Logs me `Logged in as ...` nazar aaye to bot live hai.
+
+> Note: bot.py me `/` par ek chhota health endpoint hai. Render free services
+> 15 min ki khamoshi ke baad so jati hain — is URL ko har 5 min me ping karte
+> raho (koi bhi free uptime monitor ya cron) taake bot 24/7 jaagta rahe.
+> 750 free hours/month ek mahine ke liye kaafi hain (~720-744h).
 
 ## Bot ko Discord server me add karna
 
